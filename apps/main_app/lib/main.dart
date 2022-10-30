@@ -1,16 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:main_app/theme/color_schemes.g.dart';
 import 'package:main_app/theme/typography.dart';
 
+final themeModeProvider = StateProvider<ThemeMode>((ref) {
+  return ThemeMode.dark;
+});
+
 void main() {
-  runApp(const MyApp());
+  runApp(const ProviderScope(child: MyApp()));
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themMode = ref.watch(themeModeProvider);
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
@@ -23,7 +29,7 @@ class MyApp extends StatelessWidget {
         colorScheme: darkColorScheme,
         textTheme: textTheme,
       ),
-      themeMode: ThemeMode.dark,
+      themeMode: themMode,
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
@@ -51,6 +57,21 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
+        actions: [
+          Consumer(builder: (context, ref, child) {
+            final theme = ref.watch(themeModeProvider);
+            return IconButton(
+                onPressed: () {
+                  ref.read(themeModeProvider.notifier).state =
+                      theme == ThemeMode.light
+                          ? ThemeMode.dark
+                          : ThemeMode.light;
+                },
+                icon: Icon(theme == ThemeMode.dark
+                    ? Icons.light_mode
+                    : Icons.dark_mode));
+          }),
+        ],
       ),
       body: Center(
         child: Column(
